@@ -1,6 +1,48 @@
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart'; 
 
 void main() => runApp(MyApp());
+
+final FirebaseAuth _auth = FirebaseAuth.instance;
+final GoogleSignIn googleSignIn = GoogleSignIn();
+final databaseReference = FirebaseDatabase.instance.reference();
+var userDatabaseReference;
+
+Future<String> signInWithGoogle() async {
+  final GoogleSignInAccount googleSignInAccount = await googleSignIn.signIn();
+  final GoogleSignInAuthentication googleSignInAuthentication =
+      await googleSignInAccount.authentication;
+
+  final AuthCredential credential = GoogleAuthProvider.getCredential(
+    accessToken: googleSignInAuthentication.accessToken,
+    idToken: googleSignInAuthentication.idToken,
+  );
+
+  final FirebaseUser user = await _auth.signInWithCredential(credential);
+
+  assert(!user.isAnonymous);
+  assert(await user.getIdToken() != null);
+
+  final FirebaseUser currentUser = await _auth.currentUser();
+  assert(user.uid == currentUser.uid);
+
+  if (user != null)
+  {
+    userDatabaseReference = databaseReference.child('users').child(currentUser.uid).push().set({
+      'source':'test'
+   });
+  }
+
+  return 'signInWithGoogle succeeded: $user';
+}
+
+void signOutGoogle() async{
+  await googleSignIn.signOut();
+
+  print("User Sign Out");
+}
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
@@ -102,9 +144,9 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
+        onPressed: signInWithGoogle,
+        tooltip: 'Sign In',
+        child: Icon(Icons.alarm_on),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
