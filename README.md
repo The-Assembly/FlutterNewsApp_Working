@@ -1,6 +1,8 @@
 # flutter_news_app
 
-A new Flutter project.
+Workshop working folder - final repository at https://github.com/The-Assembly/FlutterNewsApp
+
+IMP: Please follow the steps to configure Google services (sign in + Firebase) - and copy the resulting google-services.json to android/app folder - without that file this app won't work.
 
 ## Getting Started
 
